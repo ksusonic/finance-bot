@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"os"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
@@ -12,8 +13,9 @@ type Bot struct {
 
 func NewBot(token string) *Bot {
 	pref := tele.Settings{
-		Token:  token,
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		Token:   token,
+		Poller:  &tele.LongPoller{Timeout: 10 * time.Second},
+		Verbose: os.Getenv("DEBUG") != "",
 	}
 
 	b, err := tele.NewBot(pref)
