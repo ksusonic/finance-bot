@@ -15,10 +15,10 @@ CREATE TABLE chats
 (
     id         SERIAL PRIMARY KEY,
     chat_name  VARCHAR(255) NOT NULL,
-    chat_id    BIGINT       NOT NULL,
+    telegram_chat_id    BIGINT       NOT NULL,
     chat_type  VARCHAR(255) NOT NULL,
     created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT unique_chat UNIQUE (chat_id, chat_type)
+    CONSTRAINT unique_chat UNIQUE (telegram_chat_id, chat_type)
 );
 
 CREATE TABLE user_chat_relationship
@@ -44,7 +44,8 @@ CREATE TABLE transactions
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS chats;
 DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS user_chat_relationship;
+DROP TABLE IF EXISTS chats;
+DROP TABLE IF EXISTS users;
 -- +goose StatementEnd

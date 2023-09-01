@@ -8,6 +8,7 @@ type User struct {
 	Username   string
 	FirstName  string
 	LastName   string
+	CreatedAt  time.Time
 }
 
 type Chat struct {
@@ -18,8 +19,9 @@ type Chat struct {
 }
 
 type Transaction struct {
-	ID     int64
-	Name   string
-	Amount int64
-	Date   time.Time
+	ID        int64
+	Name      string
+	Amount    int64
+	Date      time.Time
+	CreatedAt time.Time
 }

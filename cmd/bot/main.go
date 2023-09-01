@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 
 	"github.com/ksusonic/finance-bot/internal/config"
 	"github.com/ksusonic/finance-bot/internal/telegram"
@@ -15,27 +17,47 @@ import (
 func main() {
 	cfg := config.NewConfig()
 
-	b := telegram.NewBot(cfg.Token)
+	b, err := telegram.NewBot(cfg.Token)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	go b.Start()
-	quit := make(chan os.Signal)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("Shutdown ...")
+	db, err := sqlx.Connect("postgres", cfg.DatabaseDsn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	//var (
+	//	transactionStorage = storage.NewTransactionsStorage(db)
+	//	userStorage        = storage.NewUsersStorage(db)
+	//	chatStorage        = storage.NewChatsStorage(db)
+	//)
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
+
+	go func(ctx context.Context) {
+		log.Println("Bot started")
+		b.Start()
+		log.Println("Bot stopped")
+	}(ctx)
+
+	<-ctx.Done()
+	log.Println("Stopping...")
+
+	cancelCtx, cancel2 := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel2()
 
 	botStop := make(chan struct{}, 1)
 	go func() {
 		b.Stop()
 		botStop <- struct{}{}
 	}()
-
 	select {
-	case <-ctx.Done():
-		log.Println(ctx.Err())
+	case <-cancelCtx.Done():
+		log.Println("Bot graceful shutdown timed out")
 	case <-botStop:
-		log.Println("Bot stopped gracefully")
+		log.Println("Bot graceful shutdown")
 	}
 }

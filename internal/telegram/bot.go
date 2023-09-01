@@ -11,7 +11,7 @@ type Bot struct {
 	*tele.Bot
 }
 
-func NewBot(token string) *Bot {
+func NewBot(token string) (*Bot, error) {
 	pref := tele.Settings{
 		Token:   token,
 		Poller:  &tele.LongPoller{Timeout: 10 * time.Second},
@@ -20,10 +20,10 @@ func NewBot(token string) *Bot {
 
 	b, err := tele.NewBot(pref)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	initHandles(b)
-	return &Bot{initHandles(b)}
+	return &Bot{initHandles(b)}, nil
 }
 
 func initHandles(b *tele.Bot) *tele.Bot {
