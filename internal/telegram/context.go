@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"context"
 	"strconv"
 
 	"go.uber.org/zap"
@@ -9,14 +8,9 @@ import (
 )
 
 type Context struct {
-	ctx    context.Context
 	bot    *tele.Bot
 	chat   *tele.Chat
 	logger *zap.SugaredLogger
-}
-
-func (c *Context) ServiceCtx() context.Context {
-	return c.ctx
 }
 
 func (c *Context) Logger() *zap.SugaredLogger {

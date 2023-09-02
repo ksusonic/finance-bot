@@ -1,0 +1,6 @@
+database_dsn: postgres://postgres:postgres@localhost:5432/finance-storage?sslmode=disable
+logger:
+  level: debug
+  development: true
+  encoding: console
+filtration_config_path: config/filtration.yaml

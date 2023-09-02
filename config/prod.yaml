@@ -1,0 +1,5 @@
+database_dsn: # add your base here
+logger:
+  level: info
+  encoding: json
+filtration_config_path: config/filtration.yaml

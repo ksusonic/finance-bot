@@ -5,13 +5,9 @@ import (
 	"time"
 
 	"github.com/ksusonic/finance-bot/internal/config"
-	"github.com/ksusonic/finance-bot/internal/controller"
-	"github.com/ksusonic/finance-bot/internal/controller/finance"
+	"github.com/ksusonic/finance-bot/internal/controller/command"
+	"github.com/ksusonic/finance-bot/internal/middleware"
 	"github.com/ksusonic/finance-bot/internal/telegram"
-
-	authController "github.com/ksusonic/finance-bot/internal/controller/auth"
-	errorController "github.com/ksusonic/finance-bot/internal/controller/error"
-	loggerController "github.com/ksusonic/finance-bot/internal/controller/logger"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -29,8 +25,9 @@ type Service struct {
 func NewBotService(
 	cfg *config.Config,
 	logger *zap.SugaredLogger,
+	db *sqlx.DB,
+	logicController telegram.Controller,
 ) (*Service, error) {
-	// telegram
 	pref := tele.Settings{
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -41,25 +38,21 @@ func NewBotService(
 	}
 	logger.Infof("logged in telegram as: %s", b.Me.Username)
 
-	// database
-	logger.Debugf("connecting to postgres storage: %s", cfg.DatabaseDsn)
-	db, err := sqlx.Connect("postgres", cfg.DatabaseDsn)
-	if err != nil {
-		return nil, err
+	b.Use(middleware.Recover(logger.Named("recover")))
+	b.Use(middleware.Logger(logger.Named("access-log")))
+	if len(cfg.FiltrationConfig.AllowedUsers) > 0 {
+		logger.Debugf("Allowed users: %s")
+		b.Use(middleware.AllowForUsers(cfg.FiltrationConfig.AllowedUsers))
+	} else {
+		logger.Warn("No users whitelist provided")
 	}
 
-	var ctrl = loggerController.NewController(
-		authController.NewController(
-			func(sender *tele.User, chat *tele.Chat) bool {
-				return true // TODO
-			},
-			errorController.NewController(
-				controller.NewController(
-					finance.NewController(),
-				),
-			),
-		),
-	)
+	var ctrl = command.NewController(logicController)
+	{
+		b.Handle(tele.OnText, func(c tele.Context) error {
+			return ctrl.OnText(telegram.Context{}, c.Message())
+		})
+	}
 
 	return &Service{
 		logger:     logger,

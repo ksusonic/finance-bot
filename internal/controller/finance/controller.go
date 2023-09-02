@@ -8,16 +8,21 @@ import (
 type Controller struct {
 }
 
-func NewController() *Controller {
+type TransactionStorage interface {
+}
+
+func NewController(txStorage TransactionStorage) *Controller {
 	return &Controller{}
 }
 
-func (c Controller) OnText(ctx telegram.Context, msg *tele.Message) {
+func (c Controller) OnText(ctx telegram.Context, msg *tele.Message) error {
 	//TODO implement me
 	panic("implement me")
+	return nil
 }
 
-func (c Controller) OnCallback(ctx telegram.Context, cb *tele.Callback) {
+func (c Controller) OnCallback(ctx telegram.Context, cb *tele.Callback) error {
 	//TODO implement me
 	panic("implement me")
+	return nil
 }

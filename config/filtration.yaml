@@ -1,0 +1,4 @@
+allowed_users:
+#  - 12345678
+# add your users here for manual filtration. 
+# leave empty to allow all users to use the bot
