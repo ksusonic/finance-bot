@@ -11,13 +11,6 @@ type User struct {
 	CreatedAt  time.Time
 }
 
-type Chat struct {
-	ID       int64
-	Name     string
-	ChatID   int64
-	ChatType string
-}
-
 type Transaction struct {
 	ID        int64
 	Name      string
