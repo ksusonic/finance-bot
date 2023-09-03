@@ -1,28 +1,18 @@
 package finance
 
 import (
-	"github.com/ksusonic/finance-bot/internal/telegram"
+	"github.com/jmoiron/sqlx"
 	tele "gopkg.in/telebot.v3"
 )
 
 type Controller struct {
+	bot *tele.Bot
+	db  *sqlx.DB
 }
 
-type TransactionStorage interface {
-}
-
-func NewController(txStorage TransactionStorage) *Controller {
-	return &Controller{}
-}
-
-func (c Controller) OnText(ctx telegram.Context, msg *tele.Message) error {
-	//TODO implement me
-	panic("implement me")
-	return nil
-}
-
-func (c Controller) OnCallback(ctx telegram.Context, cb *tele.Callback) error {
-	//TODO implement me
-	panic("implement me")
-	return nil
+func NewController(bot *tele.Bot, db *sqlx.DB) *Controller {
+	return &Controller{
+		bot: bot,
+		db:  db,
+	}
 }

@@ -6,15 +6,18 @@ import (
 
 	"github.com/caarlos0/env/v9"
 	"go.uber.org/zap"
+	tele "gopkg.in/telebot.v3"
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Token                string           `env:"TOKEN,required"`
-	DatabaseDsn          string           `yaml:"database_dsn" env:"DATABASE_DSN"`
-	ZapLoggerConfig      *zap.Config      `yaml:"logger"`
-	FiltrationConfig     FiltrationConfig `yaml:"-"`
-	FiltrationConfigPath string           `yaml:"filtration_config_path"`
+	Token                string      `env:"TOKEN,required"`
+	DatabaseDsn          string      `yaml:"database_dsn" env:"DATABASE_DSN"`
+	ZapLoggerConfig      *zap.Config `yaml:"logger"`
+	FiltrationConfigPath string      `yaml:"filtration_config_path"`
+
+	FiltrationConfig FiltrationConfig `yaml:"-"`
+	Telegram         *tele.Settings   `yaml:"-"`
 }
 
 type FiltrationConfig struct {
@@ -57,6 +60,8 @@ func NewConfig() (*Config, error) {
 	if err := env.Parse(&cfg); err != nil {
 		return nil, err
 	}
+
+	cfg.Telegram = telegramConfig(cfg.Token)
 
 	return &cfg, nil
 }

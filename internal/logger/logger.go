@@ -7,7 +7,7 @@ import (
 
 func NewLogger(cfg *zap.Config) (_ *zap.SugaredLogger, err error) {
 	var logger *zap.Logger
-	if cfg != nil {
+	if cfg == nil {
 		cfg.EncoderConfig = zap.NewProductionEncoderConfig()
 		cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 		logger, err = cfg.Build()

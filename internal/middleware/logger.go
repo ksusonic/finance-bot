@@ -10,8 +10,8 @@ import (
 func Logger(logger *zap.SugaredLogger) tele.MiddlewareFunc {
 	return func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
-			data, _ := json.MarshalIndent(c.Update(), "", " ")
-			logger.Infof("got incoming event: %v", data)
+			data, _ := json.Marshal(c.Update())
+			logger.Infof("got incoming event: %s", data)
 			return next(c)
 		}
 	}

@@ -5,11 +5,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/ksusonic/finance-bot/internal/config"
 	"github.com/ksusonic/finance-bot/internal/controller/finance"
 	"github.com/ksusonic/finance-bot/internal/logger"
 	"github.com/ksusonic/finance-bot/internal/service"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -22,21 +24,23 @@ func main() {
 		panic("Logger error: " + err.Error())
 	}
 
+	log.Debugf("connecting do database: %s", cfg.DatabaseDsn)
 	db, err := sqlx.Connect("postgres", cfg.DatabaseDsn)
 	if err != nil {
 		log.Panicf("Database init error: %v", err)
 	}
 
-	financeController := finance.NewController(db)
-	srv, err := service.NewBotService(
-		cfg,
-		log,
-		db,
-		financeController,
-	)
+	log.Debug("initializing bot service")
+	srv, err := service.NewBotService(cfg, log)
 	if err != nil {
 		log.Panicf("Service init error: %v", err)
 	}
+
+	log.Debug("registering controllers")
+	srv.RegisterController(
+		finance.NewController(srv.Bot(), db),
+		// add new here
+	)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
